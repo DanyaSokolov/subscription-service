@@ -11,12 +11,23 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./internal/db/init:/docker-entrypoint-initdb.d:ro
+
+  migrate:
+    image: migrate/migrate:v4.15.2
+    depends_on:
+      - db
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:root@db:5432/subscriptions?sslmode=disable",
+      "up"
+    ]
+    volumes:
+      - ./internal/db/migrations:/migrations
 
   app:
     build: .
     depends_on:
-      - db
+      - migrate
     ports:
       - "8080:8080"
     env_file:
