@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"github.com/DanyaSokolov/subscription-service/internal/model"
 	"github.com/google/uuid"
@@ -83,26 +82,24 @@ func (r *SubscriptionRepository) Delete(ctx context.Context, id uuid.UUID) error
 	return err
 }
 
-func (r *SubscriptionRepository) TotalCost(ctx context.Context, userID *uuid.UUID, serviceName *string, fromDate, toDate string) (int, error) {
-	log.Printf("Calculating total cost for user: %v, service: %v, from: %s, to: %s", userID, serviceName, fromDate, toDate)
+//userID *uuid.UUID, serviceName *string, fromDate, toDate string
+
+func (r *SubscriptionRepository) TotalCost(ctx context.Context, s *model.Subscription) (int, error) {
+
+	parsedUUID, err := uuid.Parse(s.UserID)
+	if err != nil {
+		return 0, err
+	}
+	
 	query := `
 		SELECT SUM(price) FROM subscriptions
 	WHERE start_date >= $1 AND (end_date IS NULL OR end_date <= $2)
+	AND user_id = $3 AND service_name = $4
 	`
-	args := []interface{}{fromDate, toDate}
-
-	if userID != nil {
-		query += " AND user_id = $3"
-		args = append(args, *userID)
-	}
-	if serviceName != nil {
-		query += " AND service_name = $4"
-		args = append(args, *serviceName)
-	}
+	args := []interface{}{s.StartDate, *s.EndDate, parsedUUID, s.ServiceName}
 
 	var total sql.NullInt64
-	err := r.DB.QueryRowContext(ctx, query, args...).Scan(&total)
-	log.Printf("Query: %s, Args: %v", query, args)
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(&total)
 	if err != nil {
 		return 0, err
 	}

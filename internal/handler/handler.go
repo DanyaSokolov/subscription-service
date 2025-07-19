@@ -25,9 +25,8 @@ func NewSubscriptionHandler(repo *repository.SubscriptionRepository, logger *zap
 // @Tags subscriptions
 // @Accept json
 // @Produce json
-// @Param subscription body model.Subscription true "Подписка"
+// @Param subscription body model.SubscriptionCreateRequest true "Данные подписки"
 // @Success 200 {object} model.Subscription
-// @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /subscriptions [post]
 func (h *SubscriptionHandler) Create(c *gin.Context) {
@@ -54,12 +53,10 @@ func (h *SubscriptionHandler) Create(c *gin.Context) {
 // @Produce json
 // @Param id path string true "ID подписки"
 // @Success 200 {object} model.Subscription
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /subscriptions/{id} [get]
 func (h *SubscriptionHandler) GetByID(c *gin.Context) {
-		idParam := c.Param("id")
+	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
 		h.Logger.Error("Invalid UUID", zap.String("id", idParam), zap.Error(err))
@@ -89,9 +86,8 @@ func (h *SubscriptionHandler) GetByID(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path string true "ID подписки"
-// @Param subscription body model.Subscription true "Подписка"
+// @Param subscription body model.SubscriptionUpdateRequest true "Подписка"
 // @Success 200 {object} model.Subscription
-// @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /subscriptions/{id} [put]
 func (h *SubscriptionHandler) Update(c *gin.Context) {
@@ -127,7 +123,6 @@ func (h *SubscriptionHandler) Update(c *gin.Context) {
 // @Tags subscriptions
 // @Param id path string true "ID подписки"
 // @Success 204 {string} string ""
-// @Failure 400 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /subscriptions/{id} [delete]
 func (h *SubscriptionHandler) Delete(c *gin.Context) {
@@ -172,36 +167,18 @@ func (h *SubscriptionHandler) List(c *gin.Context) {
 // @Description Считает общую стоимость по фильтрам
 // @Tags subscriptions
 // @Produce json
-// @Param user_id query string false "ID пользователя"
-// @Param service_name query string false "Название сервиса"
-// @Param start_date query string false "Начальная дата"
-// @Param end_date query string false "Конечная дата"
-// @Success 200 {object} map[string]float64
-// @Failure 400 {object} map[string]interface{}
+// @Param        subscription body  model.TotalCostRequest  true  "Период подписок"
+// @Success 200 {object} model.TotalCostResponse "successful operation"
 // @Failure 500 {object} map[string]interface{}
 // @Router /subscriptions/total-cost [get]
 func (h *SubscriptionHandler) TotalCost(c *gin.Context) {
-	userID := c.Query("user_id")
-	serviceName := c.Query("service_name")
-	fromDate := c.Query("start_date")
-	toDate := c.Query("end_date")
-
-	var userUUID *uuid.UUID
-	if userID != "" {
-		parsedUUID, err := uuid.Parse(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user_id"})
-			return
-		}
-		userUUID = &parsedUUID
+	var sub model.Subscription
+	if err := c.ShouldBindJSON(&sub); err != nil {
+		h.Logger.Error("Failed to bind JSON", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
 	}
-
-	var serviceNamePtr *string
-	if serviceName != "" {
-		serviceNamePtr = &serviceName
-	}
-
-	total, err := h.Repo.TotalCost(c.Request.Context(), userUUID, serviceNamePtr, fromDate, toDate)
+	total, err := h.Repo.TotalCost(c.Request.Context(), &sub)
 	if err != nil {
 		h.Logger.Error("TotalCost failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate total cost"})

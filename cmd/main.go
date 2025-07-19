@@ -51,32 +51,24 @@ func main() {
 	}
 	defer db.Close()
 
-	// Логгер
 	l := logger.NewLogger()
 
-	// Репозиторий
 	repo := repository.NewSubscriptionRepository(db)
 
-	// Хендлер
 	h := handler.NewSubscriptionHandler(repo, l)
 
-	// Роутер
 	r := gin.Default()
 
-	// CRUD endpoints
 	r.POST("/subscriptions", h.Create)
 	r.GET("/subscriptions/:id", h.GetByID)
 	r.PUT("/subscriptions/:id", h.Update)
 	r.DELETE("/subscriptions/:id", h.Delete)
 	r.GET("/subscriptions", h.List)
 
-	// Общая сумма
 	r.GET("/subscriptions/total-cost", h.TotalCost)
 
-	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Запуск
 	port := os.Getenv("SERVER_PORT")
 	if port == "" {
 		port = "8080"

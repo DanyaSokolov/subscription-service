@@ -62,12 +62,12 @@ const docTemplate = `{
                 "summary": "Создать подписку",
                 "parameters": [
                     {
-                        "description": "Подписка",
+                        "description": "Данные подписки",
                         "name": "subscription",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Subscription"
+                            "$ref": "#/definitions/model.SubscriptionCreateRequest"
                         }
                     }
                 ],
@@ -76,13 +76,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Subscription"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     },
                     "500": {
@@ -107,45 +100,20 @@ const docTemplate = `{
                 "summary": "Общая стоимость подписок",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "ID пользователя",
-                        "name": "user_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Название сервиса",
-                        "name": "service_name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Начальная дата",
-                        "name": "start_date",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Конечная дата",
-                        "name": "end_date",
-                        "in": "query"
+                        "description": "Период подписок",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TotalCostRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "successful operation",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "number"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/model.TotalCostResponse"
                         }
                     },
                     "500": {
@@ -184,20 +152,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Subscription"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -233,7 +187,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Subscription"
+                            "$ref": "#/definitions/model.SubscriptionUpdateRequest"
                         }
                     }
                 ],
@@ -242,13 +196,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Subscription"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     },
                     "500": {
@@ -280,13 +227,6 @@ const docTemplate = `{
                         "description": "No Content",
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     },
                     "500": {
@@ -321,6 +261,85 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "model.SubscriptionCreateRequest": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string",
+                    "example": "2025-08"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "service_name": {
+                    "type": "string",
+                    "example": "Yandex Plus"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2025-04"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "1e4adfee-2bf1-4721-ae6f-7636e79a0cba"
+                }
+            }
+        },
+        "model.SubscriptionUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string",
+                    "example": "2025-12"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "service_name": {
+                    "type": "string",
+                    "example": "Yandex Plus"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2025-05"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "e9c3a059-089d-4c5b-b0cc-17b5a78bb6ef"
+                }
+            }
+        },
+        "model.TotalCostRequest": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string",
+                    "example": "2025-11"
+                },
+                "service_name": {
+                    "type": "string",
+                    "example": "Spotify"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2025-07"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+                }
+            }
+        },
+        "model.TotalCostResponse": {
+            "type": "object",
+            "properties": {
+                "total_cost": {
+                    "type": "integer"
                 }
             }
         }
